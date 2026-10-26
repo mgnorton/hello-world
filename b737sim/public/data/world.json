@@ -1,0 +1,163 @@
+{
+ "home": {
+  "icao": "KDFW",
+  "lat": 32.89723305,
+  "lon": -97.03769472
+ },
+ "sources": {
+  "elevation": "Tilezen terrarium terrain tiles (USGS 3DEP/NED), AWS Open Data",
+  "landcover": "ESA WorldCover 10m 2021 v200, CC BY 4.0 (c) ESA WorldCover project / Contains modified Copernicus Sentinel data (2021)"
+ },
+ "classes": [
+  "none",
+  "tree",
+  "shrub",
+  "grass",
+  "crop",
+  "built",
+  "bare",
+  "snow",
+  "water",
+  "wetland",
+  "mangrove",
+  "moss"
+ ],
+ "terrainWide": {
+  "south": 29.8,
+  "north": 35.6,
+  "west": -100,
+  "east": -94.2,
+  "step": 0.004,
+  "rows": 1451,
+  "cols": 1451,
+  "scale": 0.25
+ },
+ "terrainMetro": {
+  "south": 32.35,
+  "north": 33.45,
+  "west": -97.75,
+  "east": -96.35,
+  "step": 0.001,
+  "rows": 1101,
+  "cols": 1401,
+  "scale": 0.25
+ },
+ "landcoverWide": {
+  "south": 29.8,
+  "north": 35.6,
+  "west": -100,
+  "east": -94.2,
+  "step": 0.002,
+  "rows": 2900,
+  "cols": 2900
+ },
+ "landcoverMetro": {
+  "south": 32.35,
+  "north": 33.45,
+  "west": -97.75,
+  "east": -96.35,
+  "step": 0.00035,
+  "rows": 3143,
+  "cols": 4000
+ },
+ "magVar": {
+  "south": 29,
+  "west": -100,
+  "step": 1,
+  "grid": [
+   [
+    4.25,
+    3.73,
+    3.2,
+    2.65,
+    2.08,
+    1.5,
+    0.91,
+    0.3
+   ],
+   [
+    4.28,
+    3.75,
+    3.21,
+    2.65,
+    2.07,
+    1.48,
+    0.87,
+    0.26
+   ],
+   [
+    4.31,
+    3.77,
+    3.22,
+    2.65,
+    2.06,
+    1.46,
+    0.85,
+    0.22
+   ],
+   [
+    4.34,
+    3.79,
+    3.23,
+    2.65,
+    2.05,
+    1.44,
+    0.82,
+    0.18
+   ],
+   [
+    4.38,
+    3.82,
+    3.24,
+    2.65,
+    2.05,
+    1.43,
+    0.79,
+    0.15
+   ],
+   [
+    4.41,
+    3.85,
+    3.26,
+    2.66,
+    2.04,
+    1.41,
+    0.77,
+    0.12
+   ],
+   [
+    4.45,
+    3.87,
+    3.28,
+    2.67,
+    2.04,
+    1.4,
+    0.75,
+    0.08
+   ],
+   [
+    4.49,
+    3.9,
+    3.3,
+    2.67,
+    2.04,
+    1.39,
+    0.72,
+    0.05
+   ],
+   [
+    4.53,
+    3.93,
+    3.32,
+    2.68,
+    2.03,
+    1.37,
+    0.7,
+    0.02
+   ]
+  ],
+  "model": "WMM-2025",
+  "epoch": "2026-10-26"
+ },
+ "navCycle": "2026-10-29"
+}
