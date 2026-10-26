@@ -2,7 +2,8 @@
 // FAA data gives exact runways but not taxiways or buildings, so these are placed with
 // rules that mirror typical layouts: parallel taxiways ~400 ft from the runway, aprons
 // near the airport reference point and clear of runways. Shared by physics and graphics.
-import { dirOf, wrap360 } from '../core/math.ts';
+import { DEG, dirOf, wrap360 } from '../core/math.ts';
+import { R_EARTH } from './geo.ts';
 import type { Airport, Runway } from './navdb.ts';
 
 export interface Pavement {
@@ -22,6 +23,8 @@ export interface Building {
   width: number;
   height: number;
   kind: 'terminal' | 'hangar' | 'tower';
+  /** Curved terminal: a half ring of this outer radius bulging towards `heading`. */
+  arc?: number;
 }
 
 export interface AirportLayout {
@@ -89,6 +92,8 @@ export function airportLayout(ap: Airport): AirportLayout {
     }
   }
 
+  if (ap.ident === 'KDFW') return finish(ap, dfwTerminals(ap, pavements, buildings));
+
   // Apron and terminal near the reference point, pushed clear of the runways.
   const main = ap.runways.reduce((a, b) => (b.lengthM > a.lengthM ? b : a));
   const apronLen = big ? 1300 : medium ? 450 : 160;
@@ -144,9 +149,42 @@ export function airportLayout(ap: Airport): AirportLayout {
     };
     buildings.push({ x: tower.x, z: tower.z, heading: 0, length: 10, width: 10, height: tower.height, kind: 'tower' });
   }
-  const layout = { pavements, buildings, tower };
+  return finish(ap, { pavements, buildings, tower });
+}
+
+function finish(ap: Airport, layout: AirportLayout): AirportLayout {
   cache.set(ap, layout);
   return layout;
+}
+
+/**
+ * DFW's real landside: five terminals along International Parkway, the north-south spine road
+ * between runways 17R/35L and 18L/36R. A, C and E sit east of the spine, B and D west of it.
+ * Positions are approximate (about +-100 m); the FAA data sets have no building footprints.
+ */
+function dfwTerminals(ap: Airport, pavements: Pavement[], buildings: Building[]): AirportLayout {
+  const spineLon = -97.0403;
+  const toLocal = (lat: number, lon: number): [number, number] => [
+    ap.x + (lon - ap.lon) * DEG * R_EARTH * Math.cos(ap.lat * DEG),
+    ap.z - (lat - ap.lat) * DEG * R_EARTH,
+  ];
+  const terminals: [string, number, 1 | -1][] = [['A', 32.9058, 1], ['B', 32.9052, -1], ['C', 32.8977, 1], ['D', 32.8982, -1], ['E', 32.8898, 1]];
+  for (const [, lat, side] of terminals) {
+    const [x, z] = toLocal(lat, spineLon + side * 0.0007);
+    const heading = side > 0 ? 90 : 270;
+    const radius = 300;
+    buildings.push({ x, z, heading, length: radius * 2, width: 40, height: 16, kind: 'terminal', arc: radius });
+    // Ramp wrapping the outside of the half ring.
+    pavements.push({ x: x + side * radius * 0.6, z, heading: 0, length: radius * 2 + 220, width: radius * 1.2 + 160, kind: 'apron' });
+  }
+  // Cargo / maintenance ramp and hangars south-west of the terminals.
+  const [hx, hz] = toLocal(32.8845, -97.0445);
+  pavements.push({ x: hx, z: hz, heading: 0, length: 700, width: 260, kind: 'apron' });
+  for (let k = 0; k < 3; k++) buildings.push({ x: hx - 200, z: hz - 250 + k * 250, heading: 90, length: 90, width: 80, height: 24, kind: 'hangar' });
+  const [tx, tz] = toLocal(32.8967, -97.0403);
+  const tower = { x: tx, z: tz, height: 60 };
+  buildings.push({ x: tx, z: tz, heading: 0, length: 10, width: 10, height: tower.height, kind: 'tower' });
+  return { pavements, buildings, tower };
 }
 
 /** Is (x, z) on a generated paved area of this airport? */
