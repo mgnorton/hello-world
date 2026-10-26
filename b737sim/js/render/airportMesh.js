@@ -144,7 +144,6 @@ class LightBatch {
 }
 
 const WHITE = [1, 0.95, 0.8];
-const YELLOW = [1, 0.75, 0.2];
 const GREEN = [0.2, 1, 0.35];
 const RED = [1, 0.12, 0.08];
 const BLUE = [0.25, 0.4, 1];

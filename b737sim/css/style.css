@@ -145,7 +145,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 /* Instruments */
 #instruments {
   position: absolute; left: 50%; bottom: 86px; transform: translateX(-50%);
-  display: flex; gap: 6px; padding: 6px; background: rgba(0, 0, 0, 0.75); border-radius: 12px; border: 1px solid var(--line);
+  display: flex; align-items: flex-start; gap: 6px; padding: 6px; background: rgba(0, 0, 0, 0.75); border-radius: 12px; border: 1px solid var(--line);
 }
 #instruments canvas { display: block; border-radius: 6px; background: #000; }
 #pfd, #nd { width: 260px; height: 260px; }
@@ -153,11 +153,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #instruments.big #pfd, #instruments.big #nd { width: 360px; height: 360px; }
 #instruments.big #eicas { width: 245px; height: 360px; }
 #instruments.map-only #pfd, #instruments.map-only #eicas { display: none; }
-#instruments.map-only #nd { width: min(78vh, 90vw); height: min(78vh, 90vw); }
-.nd-zoom { position: absolute; top: 12px; right: 12px; display: flex; gap: 4px; }
-#instruments:not(.map-only) .nd-zoom { right: calc(178px + 18px); }
-#instruments.big:not(.map-only) .nd-zoom { right: calc(245px + 18px); }
-.nd-zoom button { width: 26px; height: 26px; border-radius: 6px; background: rgba(255, 255, 255, 0.12); border: 1px solid var(--line); }
+#instruments.map-only #nd { width: min(66vh, 90vw); height: min(66vh, 90vw); }
+.nd-wrap { position: relative; }
+.nd-zoom { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; opacity: 0.75; }
+.nd-zoom button { width: 26px; height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); border: 1px solid var(--line); line-height: 1; }
 
 #touch-stick {
   position: absolute; right: 120px; bottom: 100px; width: 130px; height: 130px; border-radius: 50%;
@@ -203,7 +202,10 @@ select {
 input[type=range] { accent-color: var(--accent); }
 .info { font-size: 12px; color: var(--text); background: rgba(57, 167, 255, 0.08); border: 1px solid rgba(57, 167, 255, 0.25); border-radius: 8px; padding: 8px 10px; margin-top: 6px; }
 .info b { color: var(--accent); }
-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+footer {
+  display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; position: sticky; bottom: -22px;
+  padding: 12px 0; background: linear-gradient(transparent, rgba(18, 23, 31, 0.96) 35%);
+}
 .primary, .secondary { border-radius: 10px; padding: 11px 22px; font-weight: 800; letter-spacing: 0.06em; border: 1px solid var(--line); }
 .primary { background: var(--accent); color: #00101f; border-color: var(--accent); }
 .secondary { background: rgba(255, 255, 255, 0.06); }
@@ -233,14 +235,35 @@ footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; 
   .bar-btn { min-width: 50px; font-size: 9px; padding: 4px; }
   #pfd, #nd { width: 190px; height: 190px; }
   #eicas { width: 130px; height: 190px; }
-  #instruments:not(.map-only) .nd-zoom { right: calc(130px + 18px); }
   #instruments { bottom: 74px; }
   #mcp { gap: 6px; padding: 6px; top: 52px; }
   .mcp-btn { min-width: 46px; height: 34px; font-size: 9.5px; }
   .knob output { min-width: 48px; font-size: 13px; }
 }
 @media (max-width: 600px) {
-  #eicas { display: none; }
-  #instruments:not(.map-only) .nd-zoom { right: 12px; }
+  #instruments #eicas { display: none; }
   #pfd, #nd { width: 46vw; height: 46vw; }
+}
+/* Phones in landscape: keep the centre of the screen clear. */
+@media (max-height: 560px) {
+  #topbar { top: 4px; padding: 2px 4px; }
+  .stat span { font-size: 9px; }
+  #messages { top: 44px; }
+  #cam-label { top: 44px; }
+  #mcp { top: 44px; transform: translateX(-50%) scale(0.82); transform-origin: top center; max-width: 118vw; }
+  .lever-panel { padding: 6px; gap: 6px; top: 46px; transform: none; }
+  .slider.vertical { height: 120px; width: 34px; }
+  #spoiler.slider.vertical { height: 56px; width: 28px; }
+  #flap-detents { gap: 1px; }
+  #flap-detents button { width: 38px; padding: 1px 0; font-size: 10px; }
+  .small-btn { padding: 3px 5px; min-width: 40px; font-size: 10px; }
+  #instruments { bottom: 62px; padding: 4px; gap: 4px; }
+  #instruments #eicas { display: none; }
+  #pfd, #nd { width: 34vh; height: 34vh; }
+  #instruments.big #pfd, #instruments.big #nd { width: 52vh; height: 52vh; }
+  #bottom-bar { bottom: 4px; padding: 4px; gap: 4px; }
+  .bar-btn { min-width: 46px; padding: 3px; }
+  .bar-btn .ico { font-size: 13px; line-height: 14px; }
+  #touch-stick { right: 112px; bottom: 70px; width: 104px; height: 104px; }
+  #touch-stick .knob-dot { width: 44px; height: 44px; margin: -22px; }
 }

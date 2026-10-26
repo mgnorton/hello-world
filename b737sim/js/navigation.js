@@ -109,8 +109,6 @@ const RAW = [
   ]],
 ];
 
-const toNumber = (id) => parseInt(id, 10);
-
 export class Runway {
   constructor(airport, ids, hdg, lenFt, widFt, cx, cz) {
     this.airport = airport;
@@ -416,4 +414,3 @@ function fixName(i, dep, arr) {
   return s;
 }
 
-export { toNumber };

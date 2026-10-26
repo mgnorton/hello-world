@@ -79,10 +79,6 @@ export class SoundSystem {
       buzzF.frequency.value = 900;
       buzz.connect(buzzF).connect(buzzG).connect(this.muffle);
       buzz.start();
-      const pan = ctx.createStereoPanner ? ctx.createStereoPanner() : null;
-      if (pan) {
-        pan.pan.value = i ? 0.35 : -0.35;
-      }
       return { roar, roarG, osc, oscF, oscG, buzz, buzzG, detune: i * 7 };
     });
     // Airflow.

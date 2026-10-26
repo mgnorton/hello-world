@@ -3,7 +3,7 @@
 // spring/damper landing gear with tyre friction, flaps, spoilers, reversers
 // and autobrakes. Pure JS so it can run headless for tests.
 import {
-  v3, quat, clamp, lerp, smoothstep, expK, DEG, RAD, KT, FT, FPM, G0, wrap180, bearingOf,
+  v3, quat, clamp, lerp, smoothstep, expK, DEG, RAD, KT, FPM, G0, wrap180, bearingOf,
 } from './math.js';
 import { isa, casFromTas } from './atmosphere.js';
 import { B739, flapAero, AUTOBRAKE_DECEL } from './aircraftData.js';

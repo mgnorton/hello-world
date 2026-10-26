@@ -102,9 +102,11 @@
 
     <div id="instruments">
       <canvas id="pfd"></canvas>
-      <canvas id="nd"></canvas>
+      <div class="nd-wrap">
+        <canvas id="nd"></canvas>
+        <div class="nd-zoom"><button data-act="ndOut" title="Zoom out">−</button><button data-act="ndIn" title="Zoom in">+</button></div>
+      </div>
       <canvas id="eicas"></canvas>
-      <div class="nd-zoom"><button data-act="ndOut">−</button><button data-act="ndIn">+</button></div>
     </div>
 
     <div id="touch-stick"><div class="knob-dot"></div></div>

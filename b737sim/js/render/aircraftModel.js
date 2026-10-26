@@ -716,42 +716,40 @@ export class AircraftModel {
     this.slatAnim = (this.slatAnim ?? 0) + clamp(slatExt - (this.slatAnim ?? 0), -dt / 3, dt / 3);
     const q = new THREE.Quaternion();
     for (const s of this.surfaces) {
-      let ang = 0;
+      // Hinge axes run outboard (+z on the right wing, -z on the left), so a trailing-edge-down
+      // deflection d is a rotation of d * side about the hinge axis.
+      let ted = 0;
       const off = new THREE.Vector3();
       switch (s.name) {
         case 'flapIn':
-        case 'flapOut': {
-          ang = flapAngle * DEG * (s.name === 'flapIn' ? 1 : 0.95);
+        case 'flapOut':
+          ted = flapAngle * DEG * (s.name === 'flapIn' ? 1 : 0.95);
           off.set(-flapExt * 1.1, -flapExt * 0.25, 0);
-          // Trailing edge down = rotate so the trailing edge moves -y.
-          ang = -ang * s.side;
           break;
-        }
-        case 'aileron': {
-          const a = clamp(c.roll, -1, 1) * 18 * DEG;
-          ang = (s.side > 0 ? a : -a) * s.side; // right stick: right aileron up
+        case 'aileron':
+          // Right stick: right aileron up, left aileron down.
+          ted = -clamp(c.roll, -1, 1) * 18 * DEG * s.side;
           break;
-        }
         case 'slat':
-          ang = -this.slatAnim * 18 * DEG * s.side * -1;
+          // Slats droop forward and down; rotating trailing edge up about the leading edge.
+          ted = -this.slatAnim * 20 * DEG;
           off.set(this.slatAnim * 0.35, -this.slatAnim * 0.18, 0);
-          ang = this.slatAnim * 20 * DEG * s.side;
           break;
         case 'spoiler': {
           const roll = clamp(c.roll, -1, 1);
+          // Flight spoilers assist roll on the down-going wing.
           const rollSp = Math.max(0, roll * s.side) * (s.index >= 1 && s.index <= 4 ? 1 : 0) * 0.7;
-          const spd = Math.max(ac.spoilerPos, rollSp);
-          ang = spd * 45 * DEG * s.side;
+          ted = -Math.max(ac.spoilerPos, rollSp) * 45 * DEG;
           break;
         }
         case 'elevator':
-          ang = -clamp(c.pitch, -1, 1) * 20 * DEG * s.side;
-          break;
-        case 'rudder':
-          ang = -clamp(c.yaw, -1, 1) * 25 * DEG;
+          ted = -clamp(c.pitch, -1, 1) * 20 * DEG;
           break;
         default:
       }
+      let ang = ted * s.side;
+      // Rudder hinge points up; right pedal swings the trailing edge to the right (+z).
+      if (s.name === 'rudder') ang = clamp(c.yaw, -1, 1) * 25 * DEG;
       q.setFromAxisAngle(s.axis, ang);
       s.pivot.quaternion.copy(q);
       s.pivot.position.copy(s.base).add(off);

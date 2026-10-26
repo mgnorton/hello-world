@@ -194,7 +194,8 @@ export class Simulation {
         c.roll = pilot.roll;
       }
       if (!(ap.cmd && ap.lat === 'ROLLOUT')) c.yaw = pilot.yaw;
-      c.tiller = pilot.tiller || 0;
+      // Like Infinite Flight, the roll input also steers the nosewheel while on the ground.
+      c.tiller = pilot.tiller || (ac.wow && ac.gs < 40 * KT ? pilot.roll * 0.6 : 0);
       c.brakeL = pilot.brakeL || 0;
       c.brakeR = pilot.brakeR || 0;
       ap.update(h);

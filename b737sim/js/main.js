@@ -37,7 +37,8 @@ class App {
     this.sound = new SoundSystem();
     this.options = loadOptions();
     this.lights = { landing: true, nav: true, strobe: true, beacon: true };
-    this.showInstruments = window.innerWidth > 700;
+    this.compact = window.innerWidth < 700 || window.innerHeight < 560;
+    this.showInstruments = !this.compact;
     this.instrSize = 'normal';
     this.hudTimer = 0;
     this.instTimer = 0;
@@ -513,7 +514,7 @@ class App {
     });
     $('p-sound').onchange = (e) => this.sound.setMuted(!e.target.checked);
     $('p-autotrim').onchange = (e) => { if (this.sim) this.sim.assists.autoTrim = e.target.checked; };
-    $('mcp').classList.toggle('hidden', window.innerWidth < 700);
+    $('mcp').classList.toggle('hidden', this.compact);
   }
 
   bindSlider(el, onValue) {
