@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Skyline 737 — B737-900 Flight Simulator</title>
+  <meta name="description" content="A browser flight simulator centred on operating the Boeing 737-900." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="topbar">
+      <div class="stat"><span>GS</span><b id="t-gs">0</b></div>
+      <div class="stat"><span>IAS</span><b id="t-ias">0</b></div>
+      <div class="stat"><span>ALT</span><b id="t-alt">0</b></div>
+      <div class="stat"><span>V/S</span><b id="t-vs">0</b></div>
+      <div class="stat"><span>HDG</span><b id="t-hdg">000</b></div>
+      <div class="stat wide"><span id="t-dest-l">DEST</span><b id="t-dist">--</b></div>
+      <div class="stat"><span>ETE</span><b id="t-ete">--</b></div>
+      <div class="stat"><span>FUEL</span><b id="t-fuel">--</b></div>
+      <div class="stat" id="t-rate-box"><span>SIM</span><b id="t-rate">1x</b></div>
+    </div>
+    <div id="messages"></div>
+    <div id="cam-label"></div>
+
+    <div id="mcp" class="panel">
+      <div class="mcp-group">
+        <button data-act="at" class="mcp-btn" id="m-at">A/T<i></i></button>
+        <div class="knob">
+          <label id="m-spd-l">IAS</label>
+          <div class="knob-row"><button data-knob="spd" data-d="-1">−</button><output id="m-spd">250</output><button data-knob="spd" data-d="1">+</button></div>
+          <button data-act="co" class="tiny">C/O</button>
+        </div>
+        <button data-act="lvlChg" class="mcp-btn" id="m-lvlchg">LVL CHG<i></i></button>
+      </div>
+      <div class="mcp-group">
+        <div class="knob">
+          <label>HDG</label>
+          <div class="knob-row"><button data-knob="hdg" data-d="-1">−</button><output id="m-hdg">000</output><button data-knob="hdg" data-d="1">+</button></div>
+        </div>
+        <button data-act="hdgSel" class="mcp-btn" id="m-hdgsel">HDG SEL<i></i></button>
+        <button data-act="lnav" class="mcp-btn" id="m-lnav">LNAV<i></i></button>
+        <button data-act="loc" class="mcp-btn" id="m-loc">VOR LOC<i></i></button>
+        <button data-act="app" class="mcp-btn" id="m-app">APP<i></i></button>
+      </div>
+      <div class="mcp-group">
+        <div class="knob">
+          <label>ALT</label>
+          <div class="knob-row"><button data-knob="alt" data-d="-1">−</button><output id="m-alt">10000</output><button data-knob="alt" data-d="1">+</button></div>
+        </div>
+        <button data-act="altHold" class="mcp-btn" id="m-alth">ALT HLD<i></i></button>
+        <div class="knob">
+          <label>V/S</label>
+          <div class="knob-row"><button data-knob="vs" data-d="-1">−</button><output id="m-vs">0</output><button data-knob="vs" data-d="1">+</button></div>
+        </div>
+        <button data-act="vs" class="mcp-btn" id="m-vsb">V/S<i></i></button>
+      </div>
+      <div class="mcp-group">
+        <button data-act="ap" class="mcp-btn big" id="m-cmd">CMD A<i></i></button>
+        <button data-act="fd" class="mcp-btn" id="m-fd">F/D<i></i></button>
+        <button data-act="toga" class="mcp-btn" id="m-toga">TO/GA</button>
+      </div>
+    </div>
+
+    <div id="left-panel" class="panel lever-panel">
+      <div class="lever-title">THR</div>
+      <div class="slider vertical" id="throttle"><div class="fill"></div><div class="handle"></div></div>
+      <div class="lever-value" id="thr-val">0%</div>
+      <button data-act="reverse" id="b-rev" class="small-btn">REV</button>
+    </div>
+
+    <div id="right-panel" class="panel lever-panel">
+      <div class="col">
+        <div class="lever-title">FLAPS</div>
+        <div id="flap-detents"></div>
+      </div>
+      <div class="col">
+        <div class="lever-title">SPLR</div>
+        <div class="slider vertical" id="spoiler"><div class="fill"></div><div class="handle"></div></div>
+        <button data-act="armSpeedbrake" id="b-arm" class="small-btn">ARM</button>
+        <div class="lever-title">TRIM</div>
+        <button data-act="trimDn" class="small-btn">▲ DN</button>
+        <div class="lever-value" id="trim-val">5.0</div>
+        <button data-act="trimUp" class="small-btn">▼ UP</button>
+      </div>
+    </div>
+
+    <div id="bottom-bar">
+      <button data-act="gear" id="b-gear" class="bar-btn"><span class="ico">⛭</span>GEAR</button>
+      <button data-act="autobrake" id="b-ab" class="bar-btn"><span class="ico">AB</span><em>OFF</em></button>
+      <button data-act="brake" id="b-brake" class="bar-btn"><span class="ico">⏸</span>BRAKES</button>
+      <button data-act="parkingBrake" id="b-park" class="bar-btn"><span class="ico">P</span>PARK</button>
+      <button data-act="lights" id="b-lights" class="bar-btn"><span class="ico">✷</span>LIGHTS</button>
+      <button data-act="camera" id="b-cam" class="bar-btn"><span class="ico">◉</span>CAMERA</button>
+      <button data-act="mcp" id="b-ap" class="bar-btn"><span class="ico">A</span>AUTOPILOT</button>
+      <button data-act="instruments" id="b-inst" class="bar-btn"><span class="ico">▦</span>INSTR</button>
+      <button data-act="map" id="b-map" class="bar-btn"><span class="ico">⌖</span>MAP</button>
+      <button data-act="pause" id="b-pause" class="bar-btn"><span class="ico">❚❚</span>MENU</button>
+    </div>
+
+    <div id="instruments">
+      <canvas id="pfd"></canvas>
+      <canvas id="nd"></canvas>
+      <canvas id="eicas"></canvas>
+      <div class="nd-zoom"><button data-act="ndOut">−</button><button data-act="ndIn">+</button></div>
+    </div>
+
+    <div id="touch-stick"><div class="knob-dot"></div></div>
+    <div id="yoke-mark" class="hidden"></div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <div class="menu-card">
+      <header>
+        <div class="logo">SKYLINE <span>737</span></div>
+        <div class="sub">Boeing 737-900 · CFM56-7B27 · Flight Simulator</div>
+      </header>
+      <div class="menu-grid">
+        <section>
+          <h3>Flight</h3>
+          <label>Departure <select id="o-dep"></select></label>
+          <label>Runway <select id="o-depRwy"></select></label>
+          <label>Arrival <select id="o-arr"></select></label>
+          <label>Runway <select id="o-arrRwy"></select></label>
+          <label>Start position
+            <select id="o-start">
+              <option value="runway">Lined up on the departure runway</option>
+              <option value="approach">13 nm final, autopilot on the ILS</option>
+              <option value="final">5 nm short final (hand flying)</option>
+              <option value="cruise">Cruise, 140 nm from destination</option>
+            </select>
+          </label>
+          <label>Cruise altitude <select id="o-cruiseAlt"></select></label>
+          <div class="info" id="o-route"></div>
+        </section>
+        <section>
+          <h3>Load</h3>
+          <label>Passengers <span class="val" id="o-pax-v"></span><input type="range" id="o-pax" min="0" max="189" step="1" /></label>
+          <label>Fuel (kg) <span class="val" id="o-fuel-v"></span><input type="range" id="o-fuel" min="2000" max="20890" step="100" /></label>
+          <div class="info" id="o-weights"></div>
+          <h3>Assists</h3>
+          <label class="check"><input type="checkbox" id="o-autoTrim" /> Auto pitch trim when flying by hand</label>
+          <label class="check"><input type="checkbox" id="o-apOnApproach" /> Start approach with autopilot engaged</label>
+        </section>
+        <section>
+          <h3>Environment</h3>
+          <label>Time of day <span class="val" id="o-hour-v"></span><input type="range" id="o-hour" min="0" max="23.5" step="0.5" /></label>
+          <label>Wind from <span class="val" id="o-windDir-v"></span><input type="range" id="o-windDir" min="0" max="350" step="10" /></label>
+          <label>Wind speed <span class="val" id="o-windSpeed-v"></span><input type="range" id="o-windSpeed" min="0" max="40" step="1" /></label>
+          <label>Gusts <span class="val" id="o-gust-v"></span><input type="range" id="o-gust" min="0" max="25" step="1" /></label>
+          <label>Turbulence
+            <select id="o-turbulence"><option value="0">None</option><option value="1">Light</option><option value="2">Moderate</option><option value="3">Severe</option></select>
+          </label>
+          <label>Clouds
+            <select id="o-clouds"><option value="clear">Clear</option><option value="few">Few</option><option value="scattered">Scattered</option><option value="broken">Broken</option><option value="overcast">Overcast</option></select>
+          </label>
+          <label>Cloud base (ft) <span class="val" id="o-cloudBase-v"></span><input type="range" id="o-cloudBase" min="500" max="15000" step="250" /></label>
+          <label>Visibility (km) <span class="val" id="o-visibility-v"></span><input type="range" id="o-visibility" min="1" max="100" step="1" /></label>
+        </section>
+      </div>
+      <footer>
+        <button id="help-btn" class="secondary">Controls</button>
+        <button id="fly-btn" class="primary">FLY</button>
+      </footer>
+    </div>
+  </div>
+
+  <div id="pause-menu" class="overlay hidden">
+    <div class="menu-card small">
+      <h2>Paused</h2>
+      <button data-act="resume" class="primary">Resume</button>
+      <button data-act="restart" class="secondary">Restart flight</button>
+      <button data-act="mainmenu" class="secondary">Main menu</button>
+      <button data-act="help" class="secondary">Controls</button>
+      <label class="check"><input type="checkbox" id="p-sound" checked /> Sound</label>
+      <label class="check"><input type="checkbox" id="p-autotrim" /> Auto-trim</label>
+      <div class="fail-row">
+        <span>Failures:</span>
+        <button data-act="fail1" class="tiny">ENG 1</button>
+        <button data-act="fail2" class="tiny">ENG 2</button>
+        <button data-act="fixall" class="tiny">Repair</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="report" class="overlay hidden">
+    <div class="menu-card small">
+      <h2 id="r-title">Landing</h2>
+      <div id="r-body"></div>
+      <div class="row">
+        <button data-act="closeReport" class="primary">Continue</button>
+        <button data-act="restart" class="secondary">Restart</button>
+        <button data-act="mainmenu" class="secondary">Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="help" class="overlay hidden">
+    <div class="menu-card">
+      <h2>Controls</h2>
+      <div id="help-body"></div>
+      <p class="hint">Gamepads: left stick flies, right stick X is rudder, triggers move the throttle, bumpers flaps, A gear, B brakes, X autopilot, Y camera.
+        Joysticks with a throttle lever are detected automatically.</p>
+      <h3>Quick start: your first takeoff</h3>
+      <ol class="hint">
+        <li>Release the parking brake (<b>Shift+B</b>) and press <b>Shift+T</b> (TO/GA) — the autothrottle sets takeoff thrust.</li>
+        <li>At <b>VR</b> (green bug on the speed tape, "rotate" callout) pull back (<b>↓</b>) smoothly to ~15° nose up, following the magenta flight director.</li>
+        <li>After "positive rate" raise the gear (<b>G</b>). Above 1000 ft retract flaps on schedule (UP/1/5 bugs on the speed tape).</li>
+        <li>Engage the autopilot (<b>A</b>), then <b>LNAV</b> (N) and <b>LVL CHG</b> (L) to climb to the MCP altitude along the route.</li>
+        <li>For landing, press <b>APP</b> (M) when on a heading to intercept the localizer, extend flaps 30, gear down, arm speedbrake (K), autobrake 2 — the autopilot can autoland.</li>
+      </ol>
+      <div class="row"><button data-act="closeHelp" class="primary">Close</button></div>
+    </div>
+  </div>
+
+  <div id="loading" class="overlay hidden"><div class="spinner"></div><div id="loading-text">Loading scenery…</div></div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -176,7 +176,7 @@ export class Simulation {
    * pilot: { pitch, roll, yaw, tiller, brakeL, brakeR } from the input devices.
    */
   update(frameDt, pilot) {
-    if (this.paused || this.ac.crashed) return;
+    if (this.paused || this.ac.crashed || !(frameDt > 0)) return;
     const dt = Math.min(frameDt, 0.1) * this.timeScale;
     const n = Math.max(1, Math.ceil(dt * PHYSICS_HZ));
     const h = dt / n;

@@ -84,18 +84,18 @@ export const B739 = {
   maxStroke: 0.55,
   // Points that must never touch the ground (fuselage, nacelles, wingtips, tail).
   structure: [
-    { name: 'tail', p: [-19.6, 0.5, 0], kind: 'tail' },
+    { name: 'tail', p: [-19.6, 0.3, 0], kind: 'tail' },
     { name: 'aft belly', p: [-12, -1.6, 0], kind: 'belly' },
-    { name: 'belly', p: [0, -1.9, 0], kind: 'belly' },
-    { name: 'fwd belly', p: [12, -1.8, 0], kind: 'belly' },
-    { name: 'nose', p: [20.5, -0.3, 0], kind: 'belly' },
-    { name: 'left engine', p: [3.6, -2.05, -4.9], kind: 'engine' },
-    { name: 'right engine', p: [3.6, -2.05, 4.9], kind: 'engine' },
-    { name: 'left wingtip', p: [-7.3, 0.6, -17.6], kind: 'wing' },
-    { name: 'right wingtip', p: [-7.3, 0.6, 17.6], kind: 'wing' },
+    { name: 'belly', p: [0, -1.95, 0], kind: 'belly' },
+    { name: 'fwd belly', p: [12, -1.9, 0], kind: 'belly' },
+    { name: 'nose', p: [19.3, -0.5, 0], kind: 'belly' },
+    { name: 'left engine', p: [4.4, -2.2, -4.9], kind: 'engine' },
+    { name: 'right engine', p: [4.4, -2.2, 4.9], kind: 'engine' },
+    { name: 'left wingtip', p: [-4.6, 0.35, -17.1], kind: 'wing' },
+    { name: 'right wingtip', p: [-4.6, 0.35, 17.1], kind: 'wing' },
   ],
-  engineOffsets: [[3.6, -0.7, -4.9], [3.6, -0.7, 4.9]],
-  eyePoint: [17.6, 0.95, -0.53], // captain's eye
+  engineOffsets: [[4.2, -0.7, -4.9], [4.2, -0.7, 4.9]],
+  eyePoint: [17.15, 0.98, -0.53], // captain's eye
 };
 
 /** Interpolate flap table by (fractional) detent position. */
