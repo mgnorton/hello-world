@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Skyline 737</title>
+  <meta name="description" content="Boeing 737-900 flight simulator over real North Texas terrain, FAA navigation data and NOAA weather, based at KDFW." />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="sim-root">
+  <canvas id="scene"></canvas>
+
+  <div id="hud" class="hidden">
+    <div id="topbar">
+      <div class="stat"><span>GS</span><b id="t-gs">0</b></div>
+      <div class="stat"><span>IAS</span><b id="t-ias">0</b></div>
+      <div class="stat"><span>ALT</span><b id="t-alt">0</b></div>
+      <div class="stat"><span>V/S</span><b id="t-vs">0</b></div>
+      <div class="stat"><span>HDG</span><b id="t-hdg">000</b></div>
+      <div class="stat wide"><span id="t-dest-l">DEST</span><b id="t-dist">--</b></div>
+      <div class="stat"><span>ETE</span><b id="t-ete">--</b></div>
+      <div class="stat"><span>FUEL</span><b id="t-fuel">--</b></div>
+      <div class="stat" id="t-rate-box"><span>SIM</span><b id="t-rate">1x</b></div>
+    </div>
+    <div id="messages" aria-live="polite"></div>
+    <div id="cam-label"></div>
+
+    <div id="mcp" class="panel">
+      <div class="mcp-group">
+        <div class="knob">
+          <label>CRS</label>
+          <div class="knob-row"><button data-knob="crs" data-d="-1" aria-label="Course down">−</button><output id="m-crs">000</output><button data-knob="crs" data-d="1" aria-label="Course up">+</button></div>
+        </div>
+        <button data-act="at" class="mcp-btn" id="m-at">A/T<i></i></button>
+        <div class="knob">
+          <label id="m-spd-l">IAS</label>
+          <div class="knob-row"><button data-knob="spd" data-d="-1" aria-label="Speed down">−</button><output id="m-spd">250</output><button data-knob="spd" data-d="1" aria-label="Speed up">+</button></div>
+          <button data-act="co" class="tiny">C/O</button>
+        </div>
+        <button data-act="vnav" class="mcp-btn" id="m-vnav">VNAV<i></i></button>
+        <button data-act="lvlChg" class="mcp-btn" id="m-lvlchg">LVL CHG<i></i></button>
+      </div>
+      <div class="mcp-group">
+        <div class="knob">
+          <label>HDG</label>
+          <div class="knob-row"><button data-knob="hdg" data-d="-1" aria-label="Heading left">−</button><output id="m-hdg">000</output><button data-knob="hdg" data-d="1" aria-label="Heading right">+</button></div>
+        </div>
+        <button data-act="hdgSel" class="mcp-btn" id="m-hdgsel">HDG SEL<i></i></button>
+        <button data-act="lnav" class="mcp-btn" id="m-lnav">LNAV<i></i></button>
+        <button data-act="vorLoc" class="mcp-btn" id="m-loc">VOR LOC<i></i></button>
+        <button data-act="app" class="mcp-btn" id="m-app">APP<i></i></button>
+      </div>
+      <div class="mcp-group">
+        <div class="knob">
+          <label>ALT</label>
+          <div class="knob-row"><button data-knob="alt" data-d="-1" aria-label="Altitude down">−</button><output id="m-alt">10000</output><button data-knob="alt" data-d="1" aria-label="Altitude up">+</button></div>
+        </div>
+        <button data-act="altHold" class="mcp-btn" id="m-alth">ALT HLD<i></i></button>
+        <div class="knob">
+          <label>V/S</label>
+          <div class="knob-row"><button data-knob="vs" data-d="-1" aria-label="Vertical speed down">−</button><output id="m-vs">0</output><button data-knob="vs" data-d="1" aria-label="Vertical speed up">+</button></div>
+        </div>
+        <button data-act="vs" class="mcp-btn" id="m-vsb">V/S<i></i></button>
+      </div>
+      <div class="mcp-group">
+        <button data-act="ap" class="mcp-btn big" id="m-cmd">CMD A<i></i></button>
+        <button data-act="fd" class="mcp-btn" id="m-fd">F/D<i></i></button>
+        <button data-act="toga" class="mcp-btn" id="m-toga">TO/GA</button>
+        <div class="knob">
+          <label>BARO</label>
+          <button data-act="baro" class="tiny" id="m-baro">29.92</button>
+          <button data-act="baroStd" class="tiny" id="m-std">STD</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="radios" class="panel side-panel hidden">
+      <div class="panel-head"><b>NAV / COMM radios</b><button data-act="radios" class="tiny" aria-label="Close radios">✕</button></div>
+      <div class="radio" data-radio="nav1">
+        <div class="radio-title">NAV 1 <span class="rx" id="r-nav1-rx"></span></div>
+        <div class="radio-row">
+          <output class="freq active" id="r-nav1-act">000.00</output>
+          <button class="tiny" data-swap="nav1" aria-label="Swap NAV 1">⇄</button>
+          <input class="freq" id="r-nav1-sby" inputmode="decimal" maxlength="6" aria-label="NAV 1 standby frequency" />
+        </div>
+        <div class="radio-row">
+          <span class="lbl">CRS</span>
+          <button class="tiny" data-crs="nav1" data-d="-1">−</button><output id="r-nav1-crs">000</output><button class="tiny" data-crs="nav1" data-d="1">+</button>
+          <label class="check"><input type="checkbox" data-ident="nav1" /> IDENT</label>
+        </div>
+      </div>
+      <div class="radio" data-radio="nav2">
+        <div class="radio-title">NAV 2 <span class="rx" id="r-nav2-rx"></span></div>
+        <div class="radio-row">
+          <output class="freq active" id="r-nav2-act">000.00</output>
+          <button class="tiny" data-swap="nav2" aria-label="Swap NAV 2">⇄</button>
+          <input class="freq" id="r-nav2-sby" inputmode="decimal" maxlength="6" aria-label="NAV 2 standby frequency" />
+        </div>
+        <div class="radio-row">
+          <span class="lbl">CRS</span>
+          <button class="tiny" data-crs="nav2" data-d="-1">−</button><output id="r-nav2-crs">000</output><button class="tiny" data-crs="nav2" data-d="1">+</button>
+          <label class="check"><input type="checkbox" data-ident="nav2" /> IDENT</label>
+        </div>
+      </div>
+      <div class="radio">
+        <div class="radio-title">ADF <span class="rx" id="r-adf-rx"></span></div>
+        <div class="radio-row">
+          <input class="freq" id="r-adf" inputmode="numeric" maxlength="4" aria-label="ADF frequency (kHz)" />
+          <span class="lbl">kHz</span>
+          <label class="check"><input type="checkbox" data-ident="adf" /> IDENT</label>
+        </div>
+      </div>
+      <label class="check"><input type="checkbox" id="r-autotune" /> FMC auto-tune destination ILS</label>
+      <div class="sub-head">Nearby stations <span class="hint">(tap to set NAV 1 standby)</span></div>
+      <div id="r-near" class="list"></div>
+    </div>
+
+    <div id="fmc" class="panel side-panel hidden">
+      <div class="panel-head"><b>FMC · RTE LEGS</b><button data-act="fmc" class="tiny" aria-label="Close FMC">✕</button></div>
+      <div id="f-summary" class="info"></div>
+      <div id="f-legs" class="list legs"></div>
+      <div class="hint">Tap a waypoint to fly DIRECT TO it (LNAV engages).</div>
+    </div>
+
+    <div id="wx" class="panel side-panel hidden">
+      <div class="panel-head"><b>Weather · ATIS</b><button data-act="wx" class="tiny" aria-label="Close weather">✕</button></div>
+      <div id="w-src" class="hint"></div>
+      <div id="w-metar" class="mono"></div>
+      <div class="sub-head">ATIS</div>
+      <div id="w-atis" class="atis"></div>
+      <div class="sub-head">Storms</div>
+      <div id="w-cells" class="mono"></div>
+      <label>Weather evolution
+        <select id="w-rate">
+          <option value="0">Frozen</option><option value="1">Real time</option><option value="4">4x</option><option value="15">15x</option><option value="60">60x</option>
+        </select>
+      </label>
+    </div>
+
+    <div id="left-panel" class="panel lever-panel">
+      <div class="lever-title">THR</div>
+      <div class="slider vertical" id="throttle"><div class="fill"></div><div class="handle"></div></div>
+      <div class="lever-value" id="thr-val">0%</div>
+      <button data-act="reverse" id="b-rev" class="small-btn">REV</button>
+    </div>
+
+    <div id="right-panel" class="panel lever-panel">
+      <div class="col">
+        <div class="lever-title">FLAPS</div>
+        <div id="flap-detents"></div>
+      </div>
+      <div class="col">
+        <div class="lever-title">SPLR</div>
+        <div class="slider vertical" id="spoiler"><div class="fill"></div><div class="handle"></div></div>
+        <button data-act="armSpeedbrake" id="b-arm" class="small-btn">ARM</button>
+        <div class="lever-title">TRIM</div>
+        <button data-act="trimDn" class="small-btn">▲ DN</button>
+        <div class="lever-value" id="trim-val">5.0</div>
+        <button data-act="trimUp" class="small-btn">▼ UP</button>
+      </div>
+    </div>
+
+    <div id="bottom-bar">
+      <button data-act="gear" id="b-gear" class="bar-btn"><span class="ico">⛭</span>GEAR</button>
+      <button data-act="autobrake" id="b-ab" class="bar-btn"><span class="ico">AB</span><em>OFF</em></button>
+      <button data-act="brake" id="b-brake" class="bar-btn"><span class="ico">⏸</span>BRAKES</button>
+      <button data-act="parkingBrake" id="b-park" class="bar-btn"><span class="ico">P</span>PARK</button>
+      <button data-act="lights" id="b-lights" class="bar-btn"><span class="ico">✷</span>LIGHTS</button>
+      <button data-act="camera" id="b-cam" class="bar-btn"><span class="ico">◉</span>CAMERA</button>
+      <button data-act="mcp" id="b-ap" class="bar-btn"><span class="ico">A</span>MCP</button>
+      <button data-act="radios" id="b-radios" class="bar-btn"><span class="ico">≋</span>RADIOS</button>
+      <button data-act="fmc" id="b-fmc" class="bar-btn"><span class="ico">⌸</span>FMC</button>
+      <button data-act="wx" id="b-wx" class="bar-btn"><span class="ico">☁</span>WX</button>
+      <button data-act="instruments" id="b-inst" class="bar-btn"><span class="ico">▦</span>INSTR</button>
+      <button data-act="map" id="b-map" class="bar-btn"><span class="ico">⌖</span>MAP</button>
+      <button data-act="pause" id="b-pause" class="bar-btn"><span class="ico">❚❚</span>MENU</button>
+    </div>
+
+    <div id="instruments">
+      <canvas id="pfd"></canvas>
+      <div class="nd-wrap">
+        <canvas id="nd"></canvas>
+        <div class="nd-ctl">
+          <button data-act="ndOut" title="Range out" aria-label="ND range out">−</button>
+          <button data-act="ndIn" title="Range in" aria-label="ND range in">+</button>
+          <button data-act="ndMode" title="MAP / VOR / APP">MODE</button>
+          <button data-act="wxr" title="Weather radar">WXR</button>
+          <button data-act="ndSta" title="Navaids">STA</button>
+          <button data-act="ndWpt" title="Waypoints">WPT</button>
+        </div>
+      </div>
+      <canvas id="eicas"></canvas>
+    </div>
+
+    <div id="touch-stick"><div class="knob-dot"></div></div>
+    <div id="yoke-mark" class="hidden"></div>
+  </div>
+
+  <div id="menu" class="overlay">
+    <div class="menu-card">
+      <header>
+        <div class="logo">SKYLINE <span>737</span></div>
+        <div class="sub">Boeing 737-900 · home base Dallas/Fort Worth (KDFW) · real terrain, FAA navigation data, NOAA weather</div>
+      </header>
+      <div id="load-status" class="info">Loading real-world data…</div>
+      <div class="menu-grid">
+        <section>
+          <h3>Flight</h3>
+          <label>Departure <select id="o-dep"></select></label>
+          <label>Runway <select id="o-depRwy"></select></label>
+          <label>SID <select id="o-sid"></select></label>
+          <label>Route (airways / fixes, optional) <input id="o-route" type="text" spellcheck="false" placeholder="e.g. DCT or J87" /></label>
+          <label>Arrival <select id="o-arr"></select></label>
+          <label>Runway <select id="o-arrRwy"></select></label>
+          <label>STAR <select id="o-star"></select></label>
+          <label>Approach <select id="o-approach"></select></label>
+          <label>Start position
+            <select id="o-start">
+              <option value="runway">Lined up on the departure runway</option>
+              <option value="approach">13 nm final, autopilot on the ILS</option>
+              <option value="final">5 nm short final (hand flying)</option>
+              <option value="cruise">Cruise, 140 nm from destination</option>
+            </select>
+          </label>
+          <label>Cruise altitude <select id="o-cruiseAlt"></select></label>
+          <div class="info" id="o-routeinfo"></div>
+        </section>
+        <section>
+          <h3>Load</h3>
+          <label>Passengers <span class="val" id="o-pax-v"></span><input type="range" id="o-pax" min="0" max="189" step="1" /></label>
+          <label>Fuel (kg) <span class="val" id="o-fuel-v"></span><input type="range" id="o-fuel" min="2000" max="20890" step="100" /></label>
+          <div class="info" id="o-weights"></div>
+          <h3>Assists</h3>
+          <label class="check"><input type="checkbox" id="o-autoTrim" /> Auto pitch trim when flying by hand</label>
+          <label class="check"><input type="checkbox" id="o-apOnApproach" /> Start approach with autopilot engaged</label>
+        </section>
+        <section>
+          <h3>Weather &amp; time</h3>
+          <label>Weather <select id="o-weather"></select></label>
+          <div class="info" id="o-wxinfo"></div>
+          <label>Evolution
+            <select id="o-weatherRate">
+              <option value="0">Frozen</option><option value="1">Real time</option><option value="4">4x</option><option value="15">15x</option><option value="60">60x</option>
+            </select>
+          </label>
+          <div id="o-custom" class="hidden">
+            <label>Wind from <span class="val" id="o-windDir-v"></span><input type="range" id="o-windDir" min="0" max="350" step="10" /></label>
+            <label>Wind speed <span class="val" id="o-windKt-v"></span><input type="range" id="o-windKt" min="0" max="45" step="1" /></label>
+            <label>Gusts <span class="val" id="o-gustKt-v"></span><input type="range" id="o-gustKt" min="0" max="25" step="1" /></label>
+            <label>Visibility <span class="val" id="o-visKm-v"></span><input type="range" id="o-visKm" min="0.4" max="50" step="0.2" /></label>
+            <label>Cloud base <span class="val" id="o-cloudBaseFt-v"></span><input type="range" id="o-cloudBaseFt" min="200" max="12000" step="100" /></label>
+            <label>Cloud cover <span class="val" id="o-cover-v"></span><input type="range" id="o-cover" min="0" max="1" step="0.05" /></label>
+            <label>Thunderstorms <span class="val" id="o-convection-v"></span><input type="range" id="o-convection" min="0" max="1" step="0.05" /></label>
+          </div>
+          <label>Local time <span class="val" id="o-hour-v"></span><input type="range" id="o-hour" min="0" max="23.5" step="0.5" /></label>
+        </section>
+      </div>
+      <footer>
+        <button id="help-btn" class="secondary">Controls</button>
+        <button id="fly-btn" class="primary" disabled>FLY</button>
+      </footer>
+    </div>
+  </div>
+
+  <div id="pause-menu" class="overlay hidden">
+    <div class="menu-card small">
+      <h2>Paused</h2>
+      <button data-act="resume" class="primary">Resume</button>
+      <button data-act="restart" class="secondary">Restart flight</button>
+      <button data-act="mainmenu" class="secondary">Main menu</button>
+      <button data-act="help" class="secondary">Controls</button>
+      <label class="check"><input type="checkbox" id="p-sound" checked /> Sound</label>
+      <label class="check"><input type="checkbox" id="p-autotrim" /> Auto-trim</label>
+      <div class="fail-row">
+        <span>Failures:</span>
+        <button data-act="fail1" class="tiny">ENG 1</button>
+        <button data-act="fail2" class="tiny">ENG 2</button>
+        <button data-act="fixall" class="tiny">Repair</button>
+      </div>
+      <div class="fail-row">
+        <span>Weather:</span>
+        <button data-act="spawnStorm" class="tiny">Storm ahead</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="report" class="overlay hidden">
+    <div class="menu-card small">
+      <h2 id="r-title">Landing</h2>
+      <div id="r-body"></div>
+      <div class="row">
+        <button data-act="closeReport" class="primary">Continue</button>
+        <button data-act="restart" class="secondary">Restart</button>
+        <button data-act="mainmenu" class="secondary">Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="help" class="overlay hidden">
+    <div class="menu-card">
+      <h2>Controls</h2>
+      <div id="help-body"></div>
+      <p class="hint">Gamepads: left stick flies, right stick X is rudder, triggers move the throttle, bumpers flaps, A gear, B brakes, X autopilot, Y camera.
+        Joysticks with a throttle lever are detected automatically. On touch screens use the stick at the right, the levers at the sides and the buttons along the bottom.</p>
+      <h3>Quick start: departing KDFW</h3>
+      <ol class="hint">
+        <li>Release the parking brake (<b>Shift+B</b>) and press <b>Shift+T</b> (TO/GA): the autothrottle sets takeoff thrust.</li>
+        <li>At <b>VR</b> (green bug, "rotate" callout) pull back (<b>↓</b>) smoothly to about 15° nose up, following the magenta flight director.</li>
+        <li>After "positive rate" raise the gear (<b>G</b>). Above 1000 ft retract the flaps on schedule (UP/1/5 bugs on the speed tape).</li>
+        <li>Engage the autopilot (<b>A</b>), then <b>LNAV</b> (N) and <b>VNAV</b> (Shift+N) to fly the real SID and route.</li>
+        <li>On the STAR, set the MCP altitude down for VNAV. Arm <b>APP</b> (M) when cleared: the FMC has tuned the real ILS. Flaps 30, gear down, speedbrake armed (K), autobrake 2; the autopilot can autoland.</li>
+        <li>Open <b>RADIOS</b> to tune real VORs (try the Ranger VOR, FUZ 115.7) and <b>WX</b> for the METAR and ATIS. The ND shows weather radar returns (W).</li>
+      </ol>
+      <div class="row"><button data-act="closeHelp" class="primary">Close</button></div>
+    </div>
+  </div>
+
+  <div id="loading" class="overlay hidden"><div class="spinner"></div><div id="loading-text">Loading scenery…</div></div>
+  <div id="fatal" class="overlay hidden"><div class="menu-card small"><h2>Can't start</h2><div id="fatal-text"></div></div></div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
