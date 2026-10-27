@@ -2,3 +2,4 @@ node_modules/
 dist/
 dist-tests/
 artifact/
+e2e-shots

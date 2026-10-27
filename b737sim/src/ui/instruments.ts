@@ -591,6 +591,12 @@ export class ND {
     this.wxrTimer = 0;
   }
 
+  /** Forget the cached radar picture (new flight). */
+  resetWxr(): void {
+    this.wxrTimer = 0;
+    this.wxr.getContext('2d')!.clearRect(0, 0, this.wxr.width, this.wxr.height);
+  }
+
   cycleMode(): void {
     this.mode = this.mode === 'MAP' ? 'VOR' : this.mode === 'VOR' ? 'APP' : 'MAP';
   }

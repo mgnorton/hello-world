@@ -1,4 +1,6 @@
 :root {
+  color-scheme: dark;
+  --bg: #0a0d12;
   --panel: rgba(16, 20, 26, 0.72);
   --panel-solid: #141920;
   --line: rgba(255, 255, 255, 0.12);
@@ -17,13 +19,14 @@ html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: #0a0d12;
+  background: var(--bg);
   color: var(--text);
   font: 14px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-user-select: none;
   user-select: none;
   touch-action: none;
 }
+#sim-root { position: fixed; inset: 0; background: var(--bg); color: var(--text); }
 #scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 .hidden { display: none !important; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -118,27 +121,27 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* MCP */
 #mcp {
-  position: absolute; top: 60px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px;
-  padding: 8px 10px; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 24px);
+  position: absolute; top: 60px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px;
+  padding: 6px 8px; flex-wrap: wrap; justify-content: center; width: max-content; max-width: calc(100vw - 24px);
   background: rgba(40, 44, 50, 0.9);
 }
-.mcp-group { display: flex; gap: 6px; align-items: flex-end; padding-right: 10px; border-right: 1px solid var(--line); }
+.mcp-group { display: flex; gap: 4px; align-items: flex-end; padding-right: 6px; border-right: 1px solid var(--line); }
 .mcp-group:last-child { border-right: 0; padding-right: 0; }
 .mcp-btn {
-  position: relative; min-width: 58px; height: 40px; padding: 0 6px; font-size: 11px; font-weight: 800;
+  position: relative; min-width: 48px; height: 34px; padding: 0 5px; font-size: 10px; font-weight: 800;
   background: linear-gradient(#5a6068, #3a3f46); border: 1px solid #22262b; border-radius: 6px; color: #eee;
 }
-.mcp-btn.big { min-width: 72px; }
+.mcp-btn.big { min-width: 60px; }
 .mcp-btn i { position: absolute; left: 8px; right: 8px; top: 4px; height: 3px; border-radius: 2px; background: #222; }
 .mcp-btn.on i { background: var(--green); box-shadow: 0 0 6px var(--green); }
 .mcp-btn.armed i { background: #e6e6e6; }
 .knob { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .knob label { font-size: 10px; color: #cfd5db; letter-spacing: 0.08em; }
 .knob-row { display: flex; align-items: center; gap: 2px; }
-.knob-row button { width: 26px; height: 30px; border-radius: 15px; background: #1e2226; border: 1px solid #55595f; font-weight: 800; }
+.knob-row button { width: 22px; height: 28px; border-radius: 14px; background: #1e2226; border: 1px solid #55595f; font-weight: 800; }
 .knob output {
-  display: inline-block; min-width: 60px; text-align: center; padding: 4px 4px; background: #0b0c0d;
-  font: 700 16px "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; border-radius: 4px;
+  display: inline-block; min-width: 52px; text-align: center; padding: 3px 3px; background: #0b0c0d;
+  font: 700 14px "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; border-radius: 4px;
 }
 .tiny { font-size: 10px; padding: 2px 6px; border-radius: 6px; background: #1e2226; border: 1px solid #55595f; }
 
@@ -155,8 +158,55 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #instruments.map-only #pfd, #instruments.map-only #eicas { display: none; }
 #instruments.map-only #nd { width: min(66vh, 90vw); height: min(66vh, 90vw); }
 .nd-wrap { position: relative; }
-.nd-zoom { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; opacity: 0.75; }
-.nd-zoom button { width: 26px; height: 22px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); border: 1px solid var(--line); line-height: 1; }
+.nd-ctl { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; opacity: 0.8; }
+.nd-ctl button { min-width: 26px; height: 22px; padding: 0 5px; border-radius: 6px; background: rgba(255, 255, 255, 0.14); border: 1px solid var(--line); line-height: 1; font-size: 10px; font-weight: 700; }
+
+/* Side panels: radios, FMC, weather */
+.side-panel {
+  position: absolute; top: 120px; right: 90px; width: 330px; max-height: calc(100vh - 230px); overflow-y: auto;
+  padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; background: rgba(18, 22, 28, 0.94); z-index: 3;
+}
+.panel-head { display: flex; justify-content: space-between; align-items: center; }
+.panel-head b { font-size: 12px; letter-spacing: 0.08em; color: var(--accent); }
+.sub-head { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); margin-top: 4px; }
+.radio { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
+.radio-title { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; display: flex; justify-content: space-between; }
+.radio-title .rx { color: var(--green); font-family: "DejaVu Sans Mono", Menlo, monospace; }
+.radio-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.radio-row .lbl { font-size: 11px; color: var(--muted); }
+.radio-row output { font: 700 13px "DejaVu Sans Mono", Menlo, monospace; min-width: 32px; text-align: center; }
+.freq {
+  width: 78px; padding: 4px 6px; background: #0b0c0d; border: 1px solid #3a3f46; border-radius: 4px;
+  font: 700 15px "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; text-align: center;
+}
+output.freq { color: #6ff08a; }
+input.freq { -webkit-user-select: text; user-select: text; }
+#o-route { -webkit-user-select: text; user-select: text; }
+.side-panel label.check, .radio label.check { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.list { display: flex; flex-direction: column; gap: 2px; }
+.list button {
+  display: grid; grid-template-columns: 54px 1fr auto; gap: 6px; text-align: left; padding: 4px 6px; border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; font: 12px "DejaVu Sans Mono", Menlo, monospace;
+}
+.list button:hover { border-color: var(--line); }
+.list button b { color: var(--text); }
+.list button span { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legs button { grid-template-columns: 62px 1fr 64px 52px; }
+.legs button.active { border-color: #ff4cf0; color: #ff4cf0; }
+.legs button.active b { color: #ff4cf0; }
+.legs button.done { opacity: 0.45; }
+.legs .src { font-size: 10px; color: var(--accent); padding: 4px 6px 0; letter-spacing: 0.08em; }
+.mono { font: 12px/1.45 "DejaVu Sans Mono", Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+.atis { font-size: 12.5px; line-height: 1.45; color: var(--text); }
+.side-panel select { padding: 5px 6px; }
+.side-panel > label.check { flex-direction: row; color: var(--text); }
+.tiny.on { border-color: var(--green); color: var(--green); }
+.side-panel > label:not(.check) { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+#fatal-text { color: var(--text); }
+#fly-btn:disabled { opacity: 0.45; cursor: wait; }
+.menu-card input[type=text] {
+  background: #0d1218; color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; font: inherit; width: 100%;
+}
 
 #touch-stick {
   position: absolute; right: 120px; bottom: 100px; width: 130px; height: 130px; border-radius: 50%;
@@ -239,6 +289,9 @@ footer {
   #mcp { gap: 6px; padding: 6px; top: 52px; }
   .mcp-btn { min-width: 46px; height: 34px; font-size: 9.5px; }
   .knob output { min-width: 48px; font-size: 13px; }
+}
+@media (max-width: 900px) {
+  .side-panel { right: 8px; left: 8px; width: auto; top: 96px; max-height: calc(100vh - 190px); }
 }
 @media (max-width: 600px) {
   #instruments #eicas { display: none; }

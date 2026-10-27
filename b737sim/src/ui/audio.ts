@@ -38,7 +38,6 @@ export class SoundSystem {
   private master!: GainNode;
   private muffle!: BiquadFilterNode;
   private alerts!: GainNode;
-  private noise!: AudioBuffer;
   private engines: EngineVoice[] = [];
   private windF!: BiquadFilterNode;
   private windG!: GainNode;
@@ -81,7 +80,7 @@ export class SoundSystem {
       b = 0.97 * b + 0.03 * w;
       d[i] = w * 0.6 + b * 3;
     }
-    this.noise = noise;
+
     const src = () => {
       const s = ctx.createBufferSource();
       s.buffer = noise;
