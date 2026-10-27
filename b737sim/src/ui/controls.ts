@@ -265,7 +265,13 @@ export class InputManager {
       pitch = this.touch.y;
     }
     this.gamepadThrottle = null;
-    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    // A sandboxed frame may refuse the Gamepad API by throwing.
+    let pads: (Gamepad | null)[] = [];
+    try {
+      pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    } catch {
+      pads = [];
+    }
     for (const gp of pads) {
       if (!gp || !gp.connected) continue;
       const dz = (v: number) => (Math.abs(v) < 0.06 ? 0 : (v - Math.sign(v) * 0.06) / 0.94);

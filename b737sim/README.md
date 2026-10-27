@@ -1,159 +1,135 @@
-# Skyline 737 — a Boeing 737-900 flight simulator
+# Skyline 737: a Boeing 737-900 simulator based at KDFW
 
-A browser flight simulator in the spirit of Infinite Flight, built around operating
-one aircraft properly: the **Boeing 737-900** with CFM56-7B27 engines. It runs entirely
-client-side (no build step, no server code) with a vendored copy of three.js.
+A flight simulator in the spirit of Infinite Flight, built around operating one aircraft
+properly, the **Boeing 737-900** (CFM56-7B27), over the **real** Dallas/Fort Worth region:
 
-## Running it
+- **Real geography.** USGS 3DEP elevation and ESA WorldCover 10 m land cover for about
+  640 × 540 km of North Texas (Lake Lewisville, Grapevine Lake, the Trinity River, the
+  Dallas and Fort Worth skylines, AT&T Stadium), plus every public airport in the region
+  from the FAA database.
+- **Real navigation aids.** FAA NASR + CIFP (cycle 2026-10-29): VORs, NDBs and DMEs on
+  their real frequencies, ILS localizers and glide slopes with their real courses and
+  idents, 4,600+ fixes, airways, and the real SIDs, STARs and instrument approaches. The
+  FMC builds its route from them, and the radios receive stations by line of sight.
+- **Dynamic weather.** Starts from a NOAA HRRR analysis (winds and temperatures aloft,
+  clouds, visibility, pressure, reflectivity, CAPE) or a scenario preset, then evolves:
+  the pattern drifts with the steering winds, thunderstorms grow, mature and decay,
+  throw lightning and microbursts, and pressure and temperature trend. METARs, the ATIS,
+  the altimeter, wet runways, icing and windshear alerts all follow it.
 
-ES modules need to be served over HTTP (opening `index.html` from disk won't work):
+Home base is **KDFW**: its 7 runways, ALSF-2/MALSR approach lights, PAPIs, the five
+terminals along International Parkway and the real D-ATIS runway flow.
 
-```bash
-cd b737sim
-python3 -m http.server 8000
-# then open http://localhost:8000
-```
+## Testing it
 
-Any static host works too (GitHub Pages, Netlify, `npx serve`, …). Everything, including
-three.js, is in this folder, so it also works offline.
+There are three ways, from quickest to most thorough.
 
-Requires a WebGL-capable browser (Chrome, Edge, Firefox, Safari). Desktop gives the full
-experience; phones and tablets get a touch stick and a compact layout.
+1. **Play it in your browser.** A build is published as a private claude.ai artifact:
+   <https://claude.ai/artifact/HC8hZgE2G3pZfP7LbBMEQR>. It opens on desktop, tablet or
+   phone with nothing to install. It is private to its owner until shared from the page's
+   Share menu.
+2. **Run it locally** (Node 20+):
+   ```bash
+   cd b737sim
+   npm install
+   npm run dev        # builds and serves http://localhost:8000, rebuilding on change
+   ```
+3. **Automated tests:**
+   ```bash
+   npm test           # 9 headless flight tests (no browser), under 10 seconds
+   npm run typecheck  # strict TypeScript over the whole project
+   npm run e2e        # real Chromium: loads the data, flies 8 scenarios, saves screenshots to e2e-shots/
+   ```
+   The headless tests fly the real procedures: an autoland on ILS 17C at KDFW, a takeoff from
+   17R climbing in LNAV/VNAV along the SID, a VNAV descent that must hold the path and the
+   MCP floor, a VOR radial intercept on the real Maverick VOR, the hand-flown short final,
+   and checks of the data (runway coordinates, ILS frequencies, terrain and lake positions,
+   magnetic variation) and of the weather engine (storm life cycle, lightning, microburst
+   windshear, METAR). `npm run e2e` needs Playwright with Chromium (`npm i -D playwright`
+   and `npx playwright install chromium` if you don't already have it).
 
-## What's in it
+## Why TypeScript + WebGL instead of C++ or Unity
 
-**Flight model** (`js/fdm.js`)
-- Six-degree-of-freedom rigid body integrated at 240 Hz.
-- Stability-derivative aerodynamics with per-flap-detent lift/drag/pitching moment
-  (UP, 1, 2, 5, 10, 15, 25, 30, 40), stall and post-stall with wing drop, ground effect,
-  Mach-dependent buffet margin and wave drag, gear and speedbrake drag, yaw damper.
-- CFM56-7B27 model: spool-up lag, thrust lapse with altitude and Mach, EGT, N2, fuel flow
-  from TSFC, thrust reversers, engine failures; fuel burn reduces weight.
-- Spring/damper landing gear with tyre friction, nosewheel steering (tiller at low speed,
-  pedals at speed), differential and parking brakes, anti-skid braking and autobrakes
-  (RTO, 1, 2, 3, MAX), auto speedbrake deployment on touchdown/RTO.
-- Tail-strike, engine-pod, wingtip, belly and water contact detection; hard landing /
-  over-g / overspeed structural limits.
-- Tuned to real numbers: V-speeds from weight, ~8° liftoff attitude, ~2–3° approach
-  pitch at Vref30, ~2,300 kg/h at FL350 M0.78.
+You asked for the language best suited to the outcome, and said you were not sold on HTML.
+What this project uses is not "an HTML page" but a typed application: about 10,800 lines of
+**TypeScript** (strict mode) compiled by esbuild, rendering through **WebGL** with three.js.
+HTML is only the 10-line host document and the overlay panels. The reasons:
 
-**Autopilot / autothrottle** (`js/autopilot.js`) — 737NG MCP logic:
-HDG SEL, HDG HOLD, LNAV, VOR/LOC, APP (G/S), ALT HOLD / ALT ACQ, V/S, LVL CHG (speed on
-pitch), TO/GA (takeoff and go-around), automatic IAS/Mach changeover, **autoland**
-(LAND 3 annunciation, flare, retard, rollout on the centerline), A/T modes N1,
-MCP SPD, RETARD, THR HLD, ARM. Flight director bars when the AP is off.
+- **Reach is Infinite Flight's defining feature.** One link runs on Windows, macOS, Linux,
+  iPhone, iPad and Android with no install, store review or per-platform build. That is also
+  what made it possible to hand you a tested build without access to your machine.
+- **Performance is not the bottleneck.** The flight model runs at 240 Hz and costs about
+  1 ms per frame in JavaScript's JIT. Frame time is spent on the GPU, where WebGL issues
+  the same draw calls a native OpenGL/Metal app would. A native C++ build would win on
+  photoreal whole-planet scenery, VR, or cockpit hardware (yokes, MCP panels, motion
+  platforms). None of those are needed for a 737 simulator over one region.
+- **One language from data to cockpit.** The flight model, autopilot, FMC, weather and
+  instruments are plain TypeScript modules with no DOM in them, so the same code runs in the
+  browser and in Node for the automated tests. Unity (C#) or Unreal (C++) would split this
+  across an engine editor, platform SDKs and a separate test harness.
+- **Strict types catch the real bugs.** Units (metres vs feet vs knots), true vs magnetic
+  headings and optional data (an ILS that may not exist) are where flight software goes wrong.
+  `tsc --strict` checks all of it before anything runs.
 
-**Glass cockpit** (`js/ui/instruments.js`)
-- PFD: attitude, flight path vector, FD, speed tape with V1/VR/V2/REF and flap-maneuver
-  bugs, trend vector, barber poles (Vmo/Mmo/flap/gear placards, stick-shaker and
-  minimum-maneuver speeds), altitude tape with selected-altitude bug, VSI, heading arc,
-  FMA, ILS localizer and glideslope deviation, radio altitude.
-- ND: map mode with the flight plan, airports and runways, localizer course, wind,
-  GS/TAS, next waypoint/ETA, 5–320 nm ranges (also a full-screen map).
-- EICAS: N1/EGT dials with thrust-lever command markers, N2, fuel flow, fuel quantity,
-  gross weight, stab trim, gear, flaps and system status messages.
+If you later want a native desktop build (for hardware panels or VR), the simulation core in
+`src/core`, `src/fms`, `src/nav` and `src/weather` has no browser dependencies and can be
+embedded in an Electron/Tauri shell, or ported module by module.
 
-**Warnings and sound** (`js/sim.js`, `js/audio.js`) — synthesised engine roar, fan
-whine and buzz-saw, wind and runway rumble, stick shaker, overspeed clacker, takeoff
-config horn, AP-disconnect wailer, and voice callouts: 80 knots, V1, rotate, positive
-rate, 2500 … 10, minimums, retard, sink rate, pull up, terrain, too low gear/flaps,
-glideslope, bank angle.
+## Flying it
 
-**World** (`js/render/`)
-- 20 major airports (approximate layouts) with runway markings, taxiways, apron,
-  terminal and tower, edge/centerline/TDZ lights, ALSF approach lights with sequenced
-  flashers and working PAPIs.
-- Procedural LOD terrain with water, forest, rock and snow; approach corridors kept clear.
-- Time of day (sun, sky, stars, night lighting, lit cabin windows), clouds you can fly
-  into, visibility, wind with altitude, gusts and turbulence.
-- Detailed procedural 737-900 model: winglets, CFM56 nacelles with spinning fans,
-  Fowler flaps, slats, spoilers, ailerons, elevators, rudder, reversers, retracting
-  gear, nav/strobe/beacon/landing lights.
-- Cameras: cockpit (with live screens), chase, external orbit, tower, fly-by, wing.
+The in-app **Controls** button lists every key. The short version:
 
-**Game flow** — pick departure/arrival airports and runways, start lined up, on a
-13 nm ILS final, on 5 nm short final, or in cruise; set passengers and fuel (weights
-and V-speeds are computed), weather and time; receive a landing report (vertical
-speed, g, touchdown point, centerline offset). Failures can be triggered from the
-pause menu.
-
-## Controls
-
-| Key | Action |
+| Action | Keys |
 | --- | --- |
-| Arrow Up / Down | Pitch (nose down / nose up) |
-| Arrow Left / Right | Roll (also steers the nosewheel when slow on the ground) |
-| Z / X | Rudder & nosewheel steering |
-| + / − , PgUp / PgDn | Throttle |
-| Shift+T | TO/GA |
-| R | Thrust reversers (on the ground) |
-| [ / ] or F6 / F7 | Flaps up / down |
-| G | Gear |
-| / | Speedbrake (down → flight detent → up), K arms it |
-| B (hold) / Shift+B | Brakes / parking brake |
-| J | Autobrake (RTO, OFF, 1, 2, 3, MAX) |
-| Home / End | Stab trim nose down / nose up |
-| A, T | Autopilot CMD, autothrottle |
-| H, N, L, V, O, M | HDG SEL, LNAV, LVL CHG, V/S, ALT HOLD, APP |
-| Ctrl + arrows, Ctrl + PgUp/PgDn | MCP heading / altitude / speed |
-| C / Shift+C | Cycle cameras; right-drag to look, wheel to zoom |
-| Y | Mouse yoke (hold left button) |
-| I | Instruments size / hide |
-| P or Esc | Pause menu |
-| < / > | Simulation rate (0.5×–4×) |
+| Pitch / roll / rudder | Arrows, Z / X (or gamepad, joystick, mouse yoke with Y, touch stick) |
+| Throttle, TO/GA | + / − or PgUp / PgDn, Shift+T |
+| Flaps, gear, speedbrake | [ / ], G, / (K arms it) |
+| Brakes, parking brake, autobrake | B (hold), Shift+B, J |
+| Autopilot | A (CMD), T (A/T), H (HDG SEL), N (LNAV), Shift+N (VNAV), L (LVL CHG), V (V/S), O (ALT HOLD), M (APP), Shift+M (VOR LOC) |
+| MCP heading / altitude / speed | Ctrl + arrows, Ctrl + PgUp / PgDn |
+| Altimeter | Q (local QNH), Shift+Q (STD) |
+| ND | E / Shift+E range, Ctrl+E MAP/VOR/APP, W weather radar |
+| Cameras, pause, sim rate | C / Shift+C, P or Esc, < / > |
 
-Gamepads use the standard mapping (left stick flies, right stick X rudder, triggers
-throttle, bumpers flaps, A gear, B brakes, X autopilot, Y camera). Joysticks with a
-throttle lever are detected automatically. On touch screens use the on-screen stick and
-the throttle/flap levers.
+On screen: **RADIOS** tunes NAV 1/2 and ADF (with Morse idents), **FMC** shows the route legs
+and does direct-to, **WX** shows METARs, the ATIS and nearby storms.
 
-### A first flight
+A first flight: release the parking brake (Shift+B), TO/GA (Shift+T), rotate at VR, gear up,
+then A, N and Shift+N to fly the real SID in LNAV/VNAV. The pause menu can drop a thunderstorm
+30 nm ahead of you.
 
-1. Start "Lined up on the departure runway". Release the parking brake (**Shift+B**).
-2. Press **Shift+T** (TO/GA): the autothrottle sets takeoff thrust.
-3. At **VR** (the "rotate" callout) pull back smoothly to ~15° nose up, following the
-   magenta flight director.
-4. After "positive rate", raise the gear (**G**). Retract flaps on the speed-tape bugs.
-5. Engage the autopilot (**A**), **LNAV** (N) and **LVL CHG** (L) — it climbs along the
-   route to the MCP altitude. Use LVL CHG or V/S with a lower MCP altitude to descend.
-6. Near the destination, press **APP** (M). Configure: flaps 30, gear down, speedbrake
-   armed (K), autobrake 2, MCP speed Vref+5. The autopilot can land the aircraft; or
-   disconnect (A) and hand-fly using the PAPI and ILS.
+## Real-world data
 
-## Code layout
+All data is in `public/data/` (8 MB, gzip) and is rebuilt by scripts in `tools/`:
+
+| File | Source | Rebuild |
+| --- | --- | --- |
+| `terrain_*.dat`, `landcover_*.dat`, `world.json` | USGS 3DEP via Tilezen terrain tiles; ESA WorldCover 10 m 2021 (CC BY 4.0) | `npm run data:terrain` (Python: numpy, pillow, rasterio) |
+| `navdata.dat` | FAA NASR + CIFP (via the `@squawk/*-data` packages); WMM-2025 magnetic variation | `npm run data:nav` |
+| `weather_seed.json` | NOAA HRRR analysis on AWS Open Data | `npm run data:weather` (Python: numpy, eccodes) |
+
+Run `npm run data:weather` before a session to start from the current real weather. The
+artifact can't fetch live data from the internet, so it starts from the snapshot in the build
+and evolves it. Locally the same script refreshes it.
+
+Approximations, stated plainly: the FAA publishes runways but not taxiway or building
+geometry, so taxiways, aprons and hangars are generated from the runway layout (DFW's five
+terminals are hand-placed to within about 100 m). City buildings are generated where the
+land cover is built-up, with the tall downtown towers placed individually.
+
+## Project layout
 
 ```
-b737sim/
-  index.html, css/style.css     UI shell
-  js/math.js                    vectors, quaternions, units
-  js/atmosphere.js              ISA, airspeed conversions, wind & turbulence
-  js/aircraftData.js            737-900 data, flap table, V-speeds
-  js/fdm.js                     flight dynamics, engines, gear, brakes, systems
-  js/autopilot.js               AFDS and autothrottle
-  js/navigation.js              airports, runways, ILS, flight plan, projection
-  js/terrain.js                 procedural terrain shared by physics and graphics
-  js/sim.js                     simulation session, scenarios, warnings, landing reports
-  js/audio.js                   Web Audio synthesis and speech callouts
-  js/render/                    three.js world, airports, aircraft model, cameras
-  js/ui/                        PFD/ND/EICAS displays and input devices
-  js/main.js                    app glue, menus, HUD, render loop
-  js/vendor/three.module.min.js three.js r160 (MIT)
-  tests/flight-tests.mjs        headless flight tests
+src/core      flight model, atmosphere, aircraft data, autopilot/autothrottle, warnings, session
+src/fms       flight plan from CIFP procedures and airways, VNAV path
+src/nav       NAV/ADF receivers (line of sight, real stations)
+src/weather   HRRR seed decoding, presets, evolving weather engine, METAR
+src/world     projection, magnetic variation, FAA database, terrain/land cover, airport layout
+src/render    terrain tiles and land-cover shader, airports and lighting, city, clouds/rain/lightning, aircraft, cameras
+src/ui        PFD/ND/EICAS, input, sound
+tests         headless flight tests (node:test) and the browser e2e test
+tools         esbuild build/dev server/artifact export, data pipeline
+legacy-js     the first JavaScript version, kept for reference
 ```
 
-The simulation core (`fdm`, `autopilot`, `sim`, …) has no browser dependencies, so it
-can be flown headlessly:
-
-```bash
-node b737sim/tests/flight-tests.mjs      # add -v for a flight log
-```
-
-The tests fly an autoland at KPDX, a takeoff and LNAV/LVL CHG climb from KSEA, cruise
-Mach/altitude hold with fuel-burn checks, a descent with altitude capture, a HDG SEL
-turn and a hands-off stability check.
-
-## Disclaimer
-
-For entertainment and learning only — not for real-world flight training. Aircraft
-performance, airport layouts and procedures are approximations. "Skyline" is a
-fictional airline.
+`npm run artifact` produces `artifact/`, the folder published as the claude.ai link.

@@ -48,12 +48,25 @@ function saveOptions(o: MenuOptions): void {
 
 const titleCase = (s: string) => s.toLowerCase().replace(/\b[a-z]/g, (m) => m.toUpperCase());
 
-/** Browser data loader: files sit next to the page; gzip is undone with DecompressionStream. */
+/** Decode base64 text into bytes. */
+function fromBase64(s: string): Uint8Array {
+  const bin = atob(s.replace(/\s+/g, ''));
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/**
+ * Browser data loader: files sit next to the page; gzip is undone with DecompressionStream.
+ * Hosts that only serve text (the claude.ai artifact) get `<name>.b64.txt` copies instead.
+ */
+const base64Data = document.querySelector('meta[name="skyline-data"]')?.getAttribute('content') === 'base64';
 const browserSource: DataSource = {
   async bytes(p) {
-    const r = await fetch(new URL(`data/${p}`, document.baseURI));
-    if (!r.ok) throw new Error(`${p}: HTTP ${r.status}`);
-    return new Uint8Array(await r.arrayBuffer());
+    const name = base64Data ? `${p}.b64.txt` : p;
+    const r = await fetch(new URL(`data/${name}`, document.baseURI));
+    if (!r.ok) throw new Error(`${name}: HTTP ${r.status}`);
+    return base64Data ? fromBase64(await r.text()) : new Uint8Array(await r.arrayBuffer());
   },
   async gunzip(d) {
     const stream = new Blob([d]).stream().pipeThrough(new DecompressionStream('gzip'));

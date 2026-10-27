@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 // Use a project-local Playwright if installed (npm i -D playwright), else a global one via NODE_PATH.
 const { chromium } = await import('playwright').catch(() => createRequire(import.meta.url)('playwright'));
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const dist = join(root, 'dist');
+const dist = process.env.DIST || join(root, 'dist');
 const shots = process.env.SHOTS || join(root, 'e2e-shots');
 mkdirSync(shots, { recursive: true });
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };

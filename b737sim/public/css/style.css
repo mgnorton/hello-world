@@ -21,7 +21,7 @@ html, body {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
-  font: 14px/1.35 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 14px/1.35 "B612", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-user-select: none;
   user-select: none;
   touch-action: none;
@@ -29,7 +29,10 @@ html, body {
 #sim-root { position: fixed; inset: 0; background: var(--bg); color: var(--text); }
 #scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
 .hidden { display: none !important; }
-button { font: inherit; color: inherit; cursor: pointer; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .msg, .spinner { animation: none; } }
 
 /* ---------- HUD ---------- */
 #hud { position: fixed; inset: 0; pointer-events: none; }
@@ -50,7 +53,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .stat { display: flex; flex-direction: column; align-items: center; min-width: 58px; padding: 0 6px; }
 .stat.wide { min-width: 86px; }
 .stat span { font-size: 10px; color: var(--muted); letter-spacing: 0.08em; }
-.stat b { font: 600 15px/1.2 "DejaVu Sans Mono", Menlo, Consolas, monospace; white-space: nowrap; }
+.stat b { font: 600 15px/1.2 "B612 Mono", "DejaVu Sans Mono", Menlo, Consolas, monospace; white-space: nowrap; }
 
 #messages {
   position: absolute; top: 64px; left: 50%; transform: translateX(-50%);
@@ -76,7 +79,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 #right-panel { right: var(--gutter); }
 #right-panel .col { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .lever-title { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); }
-.lever-value { font: 600 13px "DejaVu Sans Mono", Menlo, monospace; }
+.lever-value { font: 600 13px "B612 Mono", "DejaVu Sans Mono", Menlo, monospace; }
 .slider.vertical {
   position: relative; width: 44px; height: 220px; border-radius: 10px;
   background: rgba(255, 255, 255, 0.08); border: 1px solid var(--line); touch-action: none; cursor: ns-resize;
@@ -96,7 +99,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .small-btn.warn { background: rgba(255, 176, 0, 0.25); border-color: var(--amber); color: var(--amber); }
 #flap-detents { display: flex; flex-direction: column; gap: 3px; }
 #flap-detents button {
-  width: 46px; padding: 3px 0; font: 700 12px "DejaVu Sans Mono", Menlo, monospace;
+  width: 46px; padding: 3px 0; font: 700 12px "B612 Mono", "DejaVu Sans Mono", Menlo, monospace;
   background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); border-radius: 6px;
 }
 #flap-detents button.sel { background: var(--accent); color: #001; border-color: var(--accent); }
@@ -141,7 +144,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .knob-row button { width: 22px; height: 28px; border-radius: 14px; background: #1e2226; border: 1px solid #55595f; font-weight: 800; }
 .knob output {
   display: inline-block; min-width: 52px; text-align: center; padding: 3px 3px; background: #0b0c0d;
-  font: 700 14px "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; border-radius: 4px;
+  font: 700 14px "B612 Mono", "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; border-radius: 4px;
 }
 .tiny { font-size: 10px; padding: 2px 6px; border-radius: 6px; background: #1e2226; border: 1px solid #55595f; }
 
@@ -171,13 +174,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .sub-head { font-size: 11px; letter-spacing: 0.08em; color: var(--muted); margin-top: 4px; }
 .radio { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; display: flex; flex-direction: column; gap: 5px; }
 .radio-title { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; display: flex; justify-content: space-between; }
-.radio-title .rx { color: var(--green); font-family: "DejaVu Sans Mono", Menlo, monospace; }
+.radio-title .rx { color: var(--green); font-family: "B612 Mono", "DejaVu Sans Mono", Menlo, monospace; }
 .radio-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .radio-row .lbl { font-size: 11px; color: var(--muted); }
-.radio-row output { font: 700 13px "DejaVu Sans Mono", Menlo, monospace; min-width: 32px; text-align: center; }
+.radio-row output { font: 700 13px "B612 Mono", "DejaVu Sans Mono", Menlo, monospace; min-width: 32px; text-align: center; }
 .freq {
   width: 78px; padding: 4px 6px; background: #0b0c0d; border: 1px solid #3a3f46; border-radius: 4px;
-  font: 700 15px "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; text-align: center;
+  font: 700 15px "B612 Mono", "DejaVu Sans Mono", Menlo, monospace; color: #ffb36b; text-align: center;
 }
 output.freq { color: #6ff08a; }
 input.freq { -webkit-user-select: text; user-select: text; }
@@ -186,7 +189,7 @@ input.freq { -webkit-user-select: text; user-select: text; }
 .list { display: flex; flex-direction: column; gap: 2px; }
 .list button {
   display: grid; grid-template-columns: 54px 1fr auto; gap: 6px; text-align: left; padding: 4px 6px; border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; font: 12px "DejaVu Sans Mono", Menlo, monospace;
+  background: rgba(255, 255, 255, 0.04); border: 1px solid transparent; font: 12px "B612 Mono", "DejaVu Sans Mono", Menlo, monospace;
 }
 .list button:hover { border-color: var(--line); }
 .list button b { color: var(--text); }
@@ -196,7 +199,7 @@ input.freq { -webkit-user-select: text; user-select: text; }
 .legs button.active b { color: #ff4cf0; }
 .legs button.done { opacity: 0.45; }
 .legs .src { font-size: 10px; color: var(--accent); padding: 4px 6px 0; letter-spacing: 0.08em; }
-.mono { font: 12px/1.45 "DejaVu Sans Mono", Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
+.mono { font: 12px/1.45 "B612 Mono", "DejaVu Sans Mono", Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
 .atis { font-size: 12.5px; line-height: 1.45; color: var(--text); }
 .side-panel select { padding: 5px 6px; }
 .side-panel > label.check { flex-direction: row; color: var(--text); }

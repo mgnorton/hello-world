@@ -55,11 +55,19 @@ function buildArtifact() {
   const html = readFileSync(join(dist, 'index.html'), 'utf8');
   const css = readFileSync(join(dist, 'css/style.css'), 'utf8');
   const title = html.match(/<title>[\s\S]*?<\/title>/)[0];
+  // Keep the Google Fonts links (the only external stylesheet host an Artifact allows).
+  const fonts = (html.match(/<link [^>]*fonts\.(googleapis|gstatic)\.com[^>]*>/g) || []).join('\n');
   const body = html.match(/<body[^>]*>([\s\S]*)<\/body>/)[1].replace(/<script type="module" src="app.js"><\/script>/, '');
-  const page = `${title}\n<style>\n${css}\n</style>\n${body.trim()}\n<script type="module" src="app.js"></script>\n`;
+  const page = `${title}\n<meta name="skyline-data" content="base64">\n${fonts}\n<style>\n${css}\n</style>\n${body.trim()}\n<script type="module" src="app.js"></script>\n`;
   writeFileSync(join(out, 'index.html'), page);
   cpSync(join(dist, 'app.js'), join(out, 'app.js'));
-  cpSync(join(dist, 'data'), join(out, 'data'), { recursive: true });
+  // Artifacts serve web media types only, so binary data ships as base64 text.
+  mkdirSync(join(out, 'data'), { recursive: true });
+  for (const f of readdirSync(join(dist, 'data'))) {
+    const src = join(dist, 'data', f);
+    if (f.endsWith('.json')) cpSync(src, join(out, 'data', f));
+    else writeFileSync(join(out, 'data', `${f}.b64.txt`), readFileSync(src).toString('base64'));
+  }
   const files = readdirSync(join(out, 'data')).map((f) => `data/${f}`);
   console.log('artifact files:', ['app.js', ...files].join(', '));
 }
